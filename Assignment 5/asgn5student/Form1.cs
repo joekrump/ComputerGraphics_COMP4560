@@ -6,7 +6,6 @@ using System.Windows.Forms;
 using System.Data;
 using System.IO;
 using System.Text;
-using System.Timers;
 using System.Threading;
 
 namespace asgn5v1
@@ -562,7 +561,7 @@ namespace asgn5v1
                 setIdentity(trans_left_50, 4, 4);
                 trans_left_50[3, 0] = -50;
                 ctrans = matrix_multiplier(ctrans, trans_left_50);
-                Refresh();
+                Invalidate();
 			}
 			if (e.Button == transrightbtn) 
 			{
@@ -570,96 +569,40 @@ namespace asgn5v1
                 setIdentity(trans_right_50, 4, 4);
                 trans_right_50[3, 0] = 50;
                 ctrans = matrix_multiplier(ctrans, trans_right_50);
-                Refresh();
+                Invalidate();
 			}
 			if (e.Button == transupbtn)
 			{
-                double[,] trans_up_25 = new double[4,4];
-                setIdentity(trans_up_25, 4, 4);
-                trans_up_25[3, 1] = -25;
-                ctrans = matrix_multiplier(ctrans, trans_up_25);           
-				Refresh();
+                ctrans = matrix_multiplier(ctrans, MakeTranslateYMatrix(-25));
+                Invalidate();
 			}
 			
 			if(e.Button == transdownbtn)
 			{
-                double[,] trans_down_25 = new double[4, 4];
-                setIdentity(trans_down_25, 4, 4);
-                trans_down_25[3, 1] = 25;
-                ctrans = matrix_multiplier(ctrans, trans_down_25);
-                Refresh();
+                ctrans = matrix_multiplier(ctrans,MakeTranslateYMatrix(25));
+                Invalidate();
 			}
 			if (e.Button == scaleupbtn) 
 			{
-                double[,] move_to_origin = new double[4, 4];
-                double[,] move_to_back = new double[4, 4];
-                double[,] scale = new double[4, 4];
-                double[][,] transformation_matrices = new double[4][,];
-
-                transformation_matrices[0] = ctrans;
-                // initialize the transformation matrices to the identity matrix
-                setIdentity(move_to_origin, 4, 4);
-                setIdentity(move_to_back, 4, 4);
-                setIdentity(scale, 4, 4);
-                // set values for translating to origin
-                move_to_origin[3, 0] = -scrnpts[0, 0];
-                move_to_origin[3, 1] = -scrnpts[0, 1];
-                transformation_matrices[1] = move_to_origin;
-                // set values for scaling up by 10%
-                scale[0, 0] = 1.1;
-                scale[1, 1] = 1.1;
-                scale[2, 2] = 1.1;
-                transformation_matrices[2] = scale;
-                // set values for translating back to current position.
-                move_to_back[3, 0] = -move_to_origin[3, 0];
-                move_to_back[3, 1] = -move_to_origin[3, 1];
-                transformation_matrices[3] = move_to_back;
-
-                ctrans = make_net_transform(transformation_matrices);
-				Refresh();
+                Scale(1.1);
 			}
 			if (e.Button == scaledownbtn) 
 			{
-                double[,] move_to_origin = new double[4, 4];
-                double[,] move_to_back = new double[4, 4];
-                double[,] scale = new double[4, 4];
-                double[][,] transformation_matrices = new double[4][,];
-
-                transformation_matrices[0] = ctrans;
-                // initialize the transformation matrices to the identity matrix
-                setIdentity(move_to_origin, 4, 4);
-                setIdentity(move_to_back, 4, 4);
-                setIdentity(scale, 4, 4);
-                // set values for translating to origin
-                move_to_origin[3, 0] = -scrnpts[0, 0];
-                move_to_origin[3, 1] = -scrnpts[0, 1];
-                transformation_matrices[1] = move_to_origin;
-                // set values for scaling down by 10%
-                scale[0, 0] = 0.9;
-                scale[1, 1] = 0.9;
-                scale[2, 2] = 0.9;
-                transformation_matrices[2] = scale;
-                // set values for translating back to current position.
-                move_to_back[3, 0] = -move_to_origin[3, 0];
-                move_to_back[3, 1] = -move_to_origin[3, 1];
-                transformation_matrices[3] = move_to_back;
-
-                ctrans = make_net_transform(transformation_matrices);
-                Refresh();
+                Scale(0.9);
 			}
 			if (e.Button == rotxby1btn) 
 			{
-                rotate(0.05, 'x');
+                Rotate(0.05, 'x');
                 Invalidate();              
 			}
 			if (e.Button == rotyby1btn) 
 			{
-                rotate(0.05, 'y');
+                Rotate(0.05, 'y');
                 Invalidate();
 			}
 			if (e.Button == rotzby1btn) 
 			{
-                rotate(0.05, 'z');
+                Rotate(0.05, 'z');
                 Invalidate();
 			}
 
@@ -694,12 +637,12 @@ namespace asgn5v1
 
 			if(e.Button == shearleftbtn)
 			{
-				Refresh();
+                ShearX(0.1);
 			}
 
 			if (e.Button == shearrightbtn) 
 			{
-				Refresh();
+                ShearX(-0.1);
 			}
 
 			if (e.Button == resetbtn)
@@ -713,19 +656,76 @@ namespace asgn5v1
 			}
 
 		}
+        private double[,] MakeTranslateYMatrix(double amount)
+        {
+            double[,] trans = new double[4, 4];
+            setIdentity(trans, 4, 4);
+            trans[3, 1] = amount;
+            return trans;
+        }
+
+        private void ShearX(double shear_factor)
+        {
+            double[][,] transformation_matrices = new double[4][,];
+            double[,] shear_matrix = new double[4, 4];
+            double translateYAmt = scrnpts[10, 1]; //the y value of one of the bottom points of the q. 
+            transformation_matrices[0] = ctrans;
+            transformation_matrices[1] = MakeTranslateYMatrix(-translateYAmt);
+            setIdentity(shear_matrix, 4, 4);
+            shear_matrix[1, 0] = shear_factor;
+            transformation_matrices[2] = shear_matrix;
+            transformation_matrices[3] = MakeTranslateYMatrix(translateYAmt);
+            ctrans = make_net_transform(transformation_matrices);
+            Invalidate();
+        }
+        private void Scale(double scale_factor)
+        {
+            double[,] scale = new double[4, 4];
+            double[][,] transformation_matrices = new double[4][,];
+
+            transformation_matrices[0] = ctrans;
+            // initialize the transformation matrices to the identity matrix
+            setIdentity(scale, 4, 4);
+            transformation_matrices[1] = TranslateToOrigin();
+            // set values for scaling down by 10%
+            scale[0, 0] = scale_factor;
+            scale[1, 1] = scale_factor;
+            scale[2, 2] = scale_factor;
+            transformation_matrices[2] = scale;
+            transformation_matrices[3] = UndoTranslateToOrigin(transformation_matrices[1]);
+            ctrans = make_net_transform(transformation_matrices);
+            Invalidate();
+        }
+        private double[,] TranslateToOrigin(){
+            double[,] to_origin_matrix = new double[4,4];
+            setIdentity(to_origin_matrix, 4, 4);
+            to_origin_matrix[3, 0] = -scrnpts[0, 0];
+            to_origin_matrix[3, 1] = -scrnpts[0, 1];
+            return to_origin_matrix;
+        }
+
+        private double[,] UndoTranslateToOrigin(double[,] to_origin_matrix)
+        {
+            double[,] back_from_origin_matrix = new double[4, 4];
+            setIdentity(back_from_origin_matrix, 4, 4);
+            back_from_origin_matrix[3, 0] = -to_origin_matrix[3, 0];
+            back_from_origin_matrix[3, 1] = -to_origin_matrix[3, 1];
+            return back_from_origin_matrix;
+        }
+
         private void RotateXContinuously(object obj)
         {
-            rotate(0.05, 'x');
+            Rotate(0.05, 'x');
         }
 
         private void RotateYContinuously(object obj)
         {
-            rotate(0.05, 'y');
+            Rotate(0.05, 'y');
         }
 
         private void RotateZContinuously(object obj)
         {
-            rotate(0.05, 'z');
+            Rotate(0.05, 'z');
         }
 
 
@@ -744,7 +744,7 @@ namespace asgn5v1
             }
         }
 
-        public void rotate(double rotation_rads, char rotation_axis)
+        public void Rotate(double rotation_rads, char rotation_axis)
         {
             double[,] rotation_matrix = new double[4, 4];
             double[,] move_to_origin = new double[4, 4];
@@ -761,7 +761,7 @@ namespace asgn5v1
             transformation_matrices[1] = move_to_origin;
 
             setIdentity(rotation_matrix, 4, 4);
-            if (rotation_axis == 'x')
+            if (rotation_axis == 'z')
             {
                 rotation_matrix[0, 0] = Math.Cos(rotation_rads);
                 rotation_matrix[0, 1] = Math.Sin(rotation_rads);
@@ -775,7 +775,7 @@ namespace asgn5v1
                 rotation_matrix[2, 0] = -Math.Sin(rotation_rads);
                 rotation_matrix[2, 2] = Math.Cos(rotation_rads);
             }
-            else if (rotation_axis == 'z')
+            else if (rotation_axis == 'x')
             {
                 rotation_matrix[1, 1] = Math.Cos(rotation_rads);
                 rotation_matrix[1, 2] = Math.Sin(rotation_rads);
@@ -800,7 +800,7 @@ namespace asgn5v1
             catch (Exception) { }
         }
 
-        
+ 
         private double[,] matrix_multiplier(double[,] m1, double[,] m2)
         {
             double[,] resulting_matrix = new double[4,4];
