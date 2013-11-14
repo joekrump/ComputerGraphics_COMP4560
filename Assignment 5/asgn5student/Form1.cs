@@ -554,7 +554,7 @@ namespace asgn5v1
                 t.Dispose();
                 t = null;
             }
-
+            // translate left
 			if (e.Button == transleftbtn)
 			{
                 double[,] trans_left_50 = new double[4, 4];
@@ -563,6 +563,7 @@ namespace asgn5v1
                 ctrans = matrix_multiplier(ctrans, trans_left_50);
                 Invalidate();
 			}
+            // translate right
 			if (e.Button == transrightbtn) 
 			{
                 double[,] trans_right_50 = new double[4, 4];
@@ -571,35 +572,41 @@ namespace asgn5v1
                 ctrans = matrix_multiplier(ctrans, trans_right_50);
                 Invalidate();
 			}
+            // translate up 
 			if (e.Button == transupbtn)
 			{
                 ctrans = matrix_multiplier(ctrans, MakeTranslateYMatrix(-25));
                 Invalidate();
 			}
-			
+			// translate down
 			if(e.Button == transdownbtn)
 			{
                 ctrans = matrix_multiplier(ctrans,MakeTranslateYMatrix(25));
                 Invalidate();
 			}
+            // increase scale
 			if (e.Button == scaleupbtn) 
 			{
                 Scale(1.1);
 			}
+            // decrease scale
 			if (e.Button == scaledownbtn) 
 			{
                 Scale(0.9);
 			}
+            // single rotation by x.
 			if (e.Button == rotxby1btn) 
 			{
                 Rotate(0.05, 'x');
                 Invalidate();              
 			}
+            // single rotation by y.
 			if (e.Button == rotyby1btn) 
 			{
                 Rotate(0.05, 'y');
                 Invalidate();
 			}
+            // single rotation by z.
 			if (e.Button == rotzby1btn) 
 			{
                 Rotate(0.05, 'z');
